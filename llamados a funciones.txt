@@ -1,0 +1,11 @@
+LLAMADO A character_to_int:
+  addi $a1, $zero, 52
+  jal character_to_int
+  move $t0, $v0
+
+
+
+LLAMADO A selection_sort:
+  #cargar en $a1 la direccion a la cabeza de la lista
+  jal selection_sort
+  move $t0, $v0

@@ -1,0 +1,7 @@
+http://www.cplusplus.com/reference/vector/vector/ - Vector C++ 29/11/2016
+
+
+http://stackoverflow.com/questions/4147952/reading-files-with-mips-assembly
+
+
+http://courses.missouristate.edu/KenVollmar/mars/Help/SyscallHelp.html

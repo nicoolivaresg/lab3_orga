@@ -195,7 +195,7 @@ if len(sys.argv) == 5:
                             print 'Éxito en prueba: {0}'.format(test)
                         else:
                             print 'Fallo en prueba: {0}'.format(test)
-                ID_ARCHIVO = 0
+                ID_ARCHIVO = 0 ##Reiniciar Identificadores de archivos
             else:
                 print 'Tamaño de la lista debe ser mayor que 0'
         else:
