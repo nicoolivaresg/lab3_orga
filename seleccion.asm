@@ -231,16 +231,6 @@
 		addi $sp,$sp,4
 		jr $ra
 	
-	#Este procedimiento se encarga de crear una lista enlazada vacia
-	#Entrada: Sin entrada
-	#Salida: $v0-> direccion a la lista creada
-	crear_lista:
-		addi $v0,$zero,9
-		addi $a0,$zero,8
-		syscall
-		sw $zero, 0($v0)
-		sw $zero, 4($v0)
-		jr $ra
 		
 	#Este procedimiento se encarga de reconocer si una lista está vacia
 	#Entrada: $a0-> direccion de memoria de la lista
