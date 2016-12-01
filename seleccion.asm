@@ -14,8 +14,8 @@
 		
 		move $s7, $a1
 		move $s6, $a0
-		#lw $s5, 0($a1)
-		#lw $s7, 4($a1)
+		lw $s5, 0($a1)
+		lw $s7, 4($a1)
 		addi $t0, $zero, 2
 		#Se verifica que el número de argumentos es el correcto
 		#bne $s6, $t0, fallo_entrada_argumentos
@@ -28,8 +28,8 @@
 			###############################################################
   				# Open (for writing) a file that does not exist
   				li   $v0, 13       # system call for open file
-  				#la   $a0, ($s5)     # output file name
-  				la $a0, file
+  				la   $a0, ($s5)     # output file name
+  				#la $a0, file
   				li   $a1, 0        # Open for writing (flags are 0: read, 1: write)
   				li   $a2, 0        # mode is ignored
   				syscall            # open a file (file descriptor returned in $v0)
@@ -52,10 +52,8 @@
 					add $t9, $s2,$s1 # obtencion de direccion de caracter
 					lb $s3,($t9) #obtencion de numero ascii de caracter desde la direccion
 					
-					beq  $s3,45,signo_menos # pregunta si existe un signo menos o negativo
-					volver_signo_negativo:
+					beq  $s3,45,numero_negativo # pregunta si existe un signo menos o negativo
 					beq $s3,10,encontro_salto # pregunta si existe un salto de linea
-					volver_encontro_salto:
 					
 					#convertir caracter a digito decimal												
 					add $a1, $zero, $s3
@@ -70,29 +68,28 @@
 					add $s6,$s6,$s3  #(DIGITO x 10 ^ potencia) + lo anterior
 					addi $s5,$s5,1 					
 					beq $s2,0, end_loop_lectura
-					subi $s2,$s2,1 
+					continuar_despues_numero_negativo_agregado:
+					subi $s2,$s2,1
 					b loop_lectura					
 				
 				signo_menos:
-					subi $s2,$s2,1
-					addi $k0, $zero, 1
+					#subi $s2,$s2,1
+					#addi $k0, $zero, 1
 					
 				encontro_salto:
-					beq $k0,1,numero_negativo
-					beq $k0,0,numero_positivo
-					volver_numero_negativo:
-					volver_numero_positivo:					
-					b agregar_lista
-					
+					bne $k0, 1, agregar_lista					
+					addi $k0, $zero, 0
+					b continuar_despues_numero_negativo_agregado
+				
 					
 				numero_negativo:
 					sub $s6, $zero, $s6
-					addi $k0, $zero, 0
-					b volver_numero_negativo
+					addi $k0, $zero, 1
+					b agregar_lista
 				
 				numero_positivo:
-					addi $k0, $zero, 0
-					b volver_numero_positivo
+					#addi $k0, $zero, 0
+					#b volver_numero_positivo
 					
 					
 				agregar_lista:
@@ -110,22 +107,17 @@
 					addi $s6,$zero,0 #reiniciar suma del numero total
 					addi $s5 $zero,0
 					subi $s2,$s2,1
-					beq $s2,0, end_loop_lectura
-					
+					#beq $s2,0, end_loop_lectura
 					b loop_lectura
 					
 				end_loop_lectura:
-				move $s0, $zero
-				move $s1, $zero
-				move $s2, $zero
-				move $s3, $zero
-				move $s5, $zero
-				move $s6, $zero
-				move $s7, $zero
-				move $t9, $zero
-				move $k0, $zero
-				move $k1, $zero
+				#AGREGAR EL ULTIMO VALOR, debido a que no tiene salto de linea, no entra antes
+				add $a0, $zero, $s4
+				add $a1, $zero, $s6
+				jal insertar_inicio
+				move $s4,$v0
 				
+				#Mostrar lista para comprobar
 				add $a0, $zero, $s4
 				jal mostrar_lista
 				
@@ -135,7 +127,16 @@
 				move $a0, $s0      # file descriptor to close
 				syscall            # close file
 				###############################################################
-			
+				move $s0, $zero
+				move $s1, $zero
+				move $s2, $zero
+				move $s3, $zero
+				move $s6, $zero
+				move $s7, $zero
+				move $t9, $zero
+				move $k0, $zero
+				move $k1, $zero
+				
 								
 
 			
@@ -269,9 +270,9 @@
 			jal crear_nodo
 			b end_insertar_inicio
 		end_insertar_inicio:
-			lw $k0, 0($sp)
+			lw $t0, 0($sp)
 			addi $sp, $sp,12
-			jr $k0
+			jr $t0
 			
 	#Este procedimiento se encarga de mostrar por panatalla la lista enlazada
 	#Entrada:	$a0->direccion de memoria de lista
