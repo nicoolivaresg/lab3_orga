@@ -9,3 +9,19 @@ LLAMADO A selection_sort:
   #cargar en $a1 la direccion a la cabeza de la lista
   jal selection_sort
   move $t0, $v0
+
+
+LLAMADA A crear_nodo:
+  #cargar en $a0 el entero a guardar
+  jal crear_nodo
+  #recuperar de $v0 la direccion
+
+LLAMADA A crear_lista:
+  #sin entrada
+  jal crear_lista:
+  #recuperar de $v0 la direccion de memoria
+
+LLAMADA A  es_vacia:
+  #cargar en $a0 direccion de memoria de la lista
+  jal es_vacia
+  #recuperar de $v0 el resultado booleano
