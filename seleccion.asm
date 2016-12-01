@@ -4,7 +4,7 @@
 	mensaje_error_character_to_int: .asciiz "\nEl caracter ASCII está fuera del rango de digitos decimales entre 0 y 9 (48~57)"
 	buffer: .space 1048576
 	salto_linea: .asciiz "\n"
-	file: .asciiz "CP_0.txt"
+	file: .asciiz "test.txt"
 .text 
 	main:
 		#INT MAX : 2147483647 
@@ -14,8 +14,8 @@
 		
 		move $s7, $a1
 		move $s6, $a0
-		lw $s5, 0($a1)
-		lw $s7, 4($a1)
+		#lw $s5, 0($a1)
+		#lw $s7, 4($a1)
 		addi $t0, $zero, 2
 		#Se verifica que el número de argumentos es el correcto
 		#bne $s6, $t0, fallo_entrada_argumentos
@@ -28,8 +28,8 @@
 			###############################################################
   				# Open (for writing) a file that does not exist
   				li   $v0, 13       # system call for open file
-  				la   $a0, ($s5)     # output file name
-  				#la $a0, file
+  				#la   $a0, ($s5)     # output file name
+  				la $a0, file
   				li   $a1, 0        # Open for writing (flags are 0: read, 1: write)
   				li   $a2, 0        # mode is ignored
   				syscall            # open a file (file descriptor returned in $v0)
@@ -121,28 +121,24 @@
 				add $a0, $zero, $s4
 				jal mostrar_lista
 				
+				li $v0, 4
+				la $a0, salto_linea
+				syscall
+				
 				###############################################################
 				# Close the file 
 				li   $v0, 16       # system call for close file
 				move $a0, $s0      # file descriptor to close
 				syscall            # close file
-				###############################################################
-				move $s0, $zero
-				move $s1, $zero
-				move $s2, $zero
-				move $s3, $zero
-				move $s6, $zero
-				move $s7, $zero
-				move $t9, $zero
-				move $k0, $zero
-				move $k1, $zero
-				
-								
+				###############################################################								
 
 			
 			#Llamar a función (lista debe estar cargada en $a1)
 			#
+			move $a0, $s4
 			jal selection_sort
+			move $a0, $v0
+			jal mostrar_lista
 
 		
 		#Llamado a termino del programa
@@ -160,15 +156,51 @@
 		syscall
 		#Llamado a termino del programa
 		j end
-	
+		
 	#Este procedimiento se encarga de ordenar una lista enlazada, con el algoritmo iterativo de seleccion
-	#Entrada: $a1 Direccion a una lista enlazada con los elementos enteros
+	#Entrada: $a0 Direccion a una lista enlazada con los elementos enteros
 	#Salida: $v0 Direccion a lista ordenada
 	selection_sort:
-		li $v0,4
-		la $a0,message
-		syscall
-		jr $ra
+		addi $sp,$sp,-4
+		sw $a0, 0($sp)
+		add $t1,$zero, $a0 #aux = L
+		add $t0, $zero,0
+		#while(aux != null)
+		loop_1_selection_sort:
+			#if(aux = null)
+			beq $t1, $zero, end_loop_1_selection_sort
+			#(aux != null)
+			add $t0, $zero, $t1 #min = aux
+			lw $t2, 4($t1) #aux2 = aux->sig
+			#while(aux2 != null)
+			loop_2_selection_sort:
+				# if(aux2->sig = null)
+				beq $t2, $zero, end_loop_2_selection_sort
+				#(aux2->sig != null)
+					lw $a0, 0($t2) #a0 = aux2->dato
+					lw $a1, 0($t0) #a1 = min->dato
+					#if (aux->dato >= min->dato)
+					bge $a0,$a1, no_cambia_minimo
+					# (aux2->dato < min->dato)
+					add $t0, $zero, $t2 #min = aux2
+				no_cambia_minimo:		
+				lw $t2, 4($t2) #aux2 = aux2->sig
+				b loop_2_selection_sort
+			end_loop_2_selection_sort:
+			#ZONA INTERCAMBIO
+			lw $a0, 0($t0)
+			lw $a1, 0($t1)
+			sw $a1, 0($t0)
+			sw $a0, 0($t1)
+			
+			#lw $a0, 0($sp)
+			#jal mostrar_lista
+			lw $t1, 4($t1) #aux = aux->sig
+			b loop_1_selection_sort
+		end_loop_1_selection_sort:
+			lw $v0, 0($sp)
+			addi $sp, $sp, 4
+			jr $ra
 
 	
 
