@@ -11,3 +11,8 @@ http://courses.missouristate.edu/KenVollmar/mars/Help/MarsHelpCommand.html - HEL
 
 
 https://es.wikipedia.org/wiki/Ordenamiento_por_selecci%C3%B3n 1/12/2016
+
+
+https://ubuntuforums.org/showthread.php?t=729192 1/12/2016
+
+http://librosweb.es/libro/python/capitulo_10/modulos_de_sistema.html 1/12/2016

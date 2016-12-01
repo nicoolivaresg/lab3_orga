@@ -2,10 +2,12 @@
 ################ Importacion de librerias ##################
 import random
 import sys
+import os
 ################ Definicion de variables globales ###########
 NUMERO_CONJUNTOS = 0
 ID_ARCHIVO = 0
 PRUEBAS = ['secuencia({0},{1})','reverse_doble({0},{1})','primer_elemento({0},{1})','ultimo_elemento({0},{1})','reflexividad({0},{1})','transitividad({0},{1})','antisimetria({0},{1})']#,'orden_recursivo_grado_n({0})']
+COMANDOS = ['java -jar Mars_cache.jar seleccion.asm pa input/CP_{0}.txt output/OP_I_{1}.txt','java -jar Mars_cache.jar busqueda_lineal.asm pa input/CP_{0}.txt output/OP_I_{1}.txt']
 ################ Definicion de funciones ####################
 
 #Funcion que toma un archivo de texto con un conjunto
@@ -19,10 +21,14 @@ PRUEBAS = ['secuencia({0},{1})','reverse_doble({0},{1})','primer_elemento({0},{1
 #input: un conjunto de elementos enteros
 #output:  un boolean de verificacion
 def secuencia(lista,n):
-    for i in range(0,n-1):
-        if lista[i]>lista[i+1]:
-            return False
-    return True
+    if lista:
+        for i in range(0,n-1):
+            if lista[i]>lista[i+1]:
+                return False
+        return True
+    else:
+        return True
+
 
 #Funcion que verifica una propiedad de una lista:
 #Propiedad: reverse(reverse(conjunto))
@@ -148,7 +154,11 @@ def orden_recursivo_grado_n(lista):
 #       n -> cantidad de numeros aleatorios por archivo
 #output:  sin salida
 def generar_entrada(min,max,n):
-    nombre = 'CP_{0}.txt'.format(ID_ARCHIVO)
+    comando = 'mkdir -p input'
+    os.system(comando)
+    comando = 'cd input/'
+    os.system(comando)
+    nombre = 'input/CP_{0}.txt'.format(ID_ARCHIVO)
     out = open(nombre,'w')
     for i in range (0,n):
         r = random.randint(min,max)
@@ -156,9 +166,9 @@ def generar_entrada(min,max,n):
     out.close()
 
 ##Esta funcion solo es provisoria para reemplazar la lectura del archivo en mips
-def leer_entrada():
+def leer_entrada(archivo):
     L =[]
-    file = open('CP_{0}.txt'.format(ID_ARCHIVO),'r')
+    file = open(archivo,'r')
     for linea in file:
         L.append(int(linea))
     file.close()
@@ -168,34 +178,40 @@ def leer_entrada():
 
 ############### Bloque Principal ################
 if len(sys.argv) == 5:
-    print sys.argv
+    #print sys.argv
     if int(sys.argv[1]) > 0:
         if int(sys.argv[2]) <= int(sys.argv[3]):
             if int(sys.argv[4]) >= 0:
+                os.system('clear all')
+                os.system('mkdir -p output')
                 ############ Obtencion de parametros ###################
                 TOTAL_PRUEBAS = int(sys.argv[1])
                 MIN = int(sys.argv[2])
                 MAX = int(sys.argv[3])
                 N = int(sys.argv[4])
                 ########### Inicio de pruebas ###############
+                ID_ARCHIVO = 0 ##Reiniciar Identificadores de archivos
                 for i in range(0,TOTAL_PRUEBAS):
                     ########### Generar Caso de Prueba ##############
                     generar_entrada(MIN,MAX,N)
                     ########## Cargar Caso de Prueba Creado Recien ################
-                    L = leer_entrada()
-                    print 'Lista: {0}'.format(ID_ARCHIVO)
-                    ID_ARCHIVO = ID_ARCHIVO + 1 #Incrementar identificador de Caso de Prueba
+                    L = leer_entrada('input/CP_{0}.txt'.format(ID_ARCHIVO))
+                    #print 'Lista: {0}'.format(ID_ARCHIVO)
                     ################# APLICAR ORDENAMIENTO ##############
                     ## ITERATIVO ##
+                    os.system(COMANDOS[0].format(ID_ARCHIVO,ID_ARCHIVO))
+
                     ## RECURSIVO ##
-                    L.sort()
+                    #L.sort()
+
                     ################# Testing de Propiedades ###########
+                    #L = []
                     for test in PRUEBAS:
                         if eval(test.format(L,N)):
                             print 'Éxito en prueba: {0}'.format(test)
                         else:
                             print 'Fallo en prueba: {0}'.format(test)
-                ID_ARCHIVO = 0 ##Reiniciar Identificadores de archivos
+                    ID_ARCHIVO = ID_ARCHIVO + 1 #Incrementar identificador de Caso de Prueba
             else:
                 print 'Tamaño de la lista debe ser mayor que 0'
         else:

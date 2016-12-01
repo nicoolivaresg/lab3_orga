@@ -4,7 +4,6 @@
 	mensaje_error_character_to_int: .asciiz "\nEl caracter ASCII está fuera del rango de digitos decimales entre 0 y 9 (48~57)"
 	buffer: .space 1048576
 	salto_linea: .asciiz "\n"
-	file: .asciiz "test.txt"
 .text 
 	main:
 		#INT MAX : 2147483647 
@@ -14,8 +13,8 @@
 		
 		move $s7, $a1
 		move $s6, $a0
-		#lw $s5, 0($a1)
-		#lw $s7, 4($a1)
+		lw $s5, 0($a1)
+		lw $s7, 4($a1)
 		addi $t0, $zero, 2
 		#Se verifica que el número de argumentos es el correcto
 		#bne $s6, $t0, fallo_entrada_argumentos
@@ -28,8 +27,8 @@
 			###############################################################
   				# Open (for writing) a file that does not exist
   				li   $v0, 13       # system call for open file
-  				#la   $a0, ($s5)     # output file name
-  				la $a0, file
+  				la   $a0, ($s5)     # output file name
+  				#la $a0, file
   				li   $a1, 0        # Open for writing (flags are 0: read, 1: write)
   				li   $a2, 0        # mode is ignored
   				syscall            # open a file (file descriptor returned in $v0)
