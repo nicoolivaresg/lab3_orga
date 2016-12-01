@@ -8,3 +8,6 @@ http://courses.missouristate.edu/KenVollmar/mars/Help/SyscallHelp.html 29/11/201
 
 
 http://courses.missouristate.edu/KenVollmar/mars/Help/MarsHelpCommand.html - HELP MARS 30/11/2016
+
+
+https://es.wikipedia.org/wiki/Ordenamiento_por_selecci%C3%B3n 1/12/2016
