@@ -7,7 +7,7 @@ import os
 NUMERO_CONJUNTOS = 0
 ID_ARCHIVO = 0
 PRUEBAS = ['secuencia({0},{1})','reverse_doble({0},{1})','primer_elemento({0},{1})','ultimo_elemento({0},{1})','reflexividad({0},{1})','transitividad({0},{1})','antisimetria({0},{1})']#,'orden_recursivo_grado_n({0})']
-COMANDOS = ['java -jar Mars_cache.jar seleccion.asm pa input/CP_{0}.txt output/OP_I_{1}.txt','java -jar Mars_cache.jar busqueda_lineal.asm pa input/CP_{0}.txt output/OP_I_{1}.txt']
+COMANDOS = ['java -jar Mars_cache.jar seleccion.asm pa input/CP_{0}.txt output/OP_I_{1}.txt','java -jar Mars_cache.jar mezcla.asm pa input/CP_{0}.txt output/OP_I_{1}.txt']
 ################ Definicion de funciones ####################
 
 #Funcion que toma un archivo de texto con un conjunto
@@ -156,7 +156,7 @@ def orden_recursivo_grado_n(lista):
 def generar_entrada(min,max,n):
     comando = 'mkdir -p input'
     os.system(comando)
-    comando = 'cd input/'
+    comando = 'rm input/*'
     os.system(comando)
     nombre = 'input/CP_{0}.txt'.format(ID_ARCHIVO)
     out = open(nombre,'w')
@@ -184,6 +184,7 @@ if len(sys.argv) == 5:
             if int(sys.argv[4]) >= 0:
                 os.system('clear all')
                 os.system('mkdir -p output')
+                os.system('rm output/*')
                 ############ Obtencion de parametros ###################
                 TOTAL_PRUEBAS = int(sys.argv[1])
                 MIN = int(sys.argv[2])
@@ -196,13 +197,13 @@ if len(sys.argv) == 5:
                     generar_entrada(MIN,MAX,N)
                     ########## Cargar Caso de Prueba Creado Recien ################
                     L = leer_entrada('input/CP_{0}.txt'.format(ID_ARCHIVO))
-                    #print 'Lista: {0}'.format(ID_ARCHIVO)
+                    print 'Lista: {0}'.format(ID_ARCHIVO)
                     ################# APLICAR ORDENAMIENTO ##############
                     ## ITERATIVO ##
                     os.system(COMANDOS[0].format(ID_ARCHIVO,ID_ARCHIVO))
 
                     ## RECURSIVO ##
-                    #L.sort()
+                    L.sort()
 
                     ################# Testing de Propiedades ###########
                     #L = []
