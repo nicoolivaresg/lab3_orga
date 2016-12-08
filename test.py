@@ -200,7 +200,7 @@ if len(sys.argv) == 5:
                     print 'Lista: {0}'.format(ID_ARCHIVO)
                     ################# APLICAR ORDENAMIENTO ##############
                     ## ITERATIVO ##
-                    os.system(COMANDOS[1].format(ID_ARCHIVO,ID_ARCHIVO))
+                    #os.system(COMANDOS[1].format(ID_ARCHIVO,ID_ARCHIVO))
 
                     ## RECURSIVO ##
                     L.sort()
