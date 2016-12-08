@@ -7,7 +7,7 @@ import os
 NUMERO_CONJUNTOS = 0
 ID_ARCHIVO = 0
 PRUEBAS = ['secuencia({0},{1})','reverse_doble({0},{1})','primer_elemento({0},{1})','ultimo_elemento({0},{1})','reflexividad({0},{1})','transitividad({0},{1})','antisimetria({0},{1})']#,'orden_recursivo_grado_n({0})']
-COMANDOS = ['java -jar Mars_cache.jar seleccion.asm pa input/CP_{0}.txt output/OP_I_{1}.txt','java -jar Mars_cache.jar mezcla.asm pa input/CP_{0}.txt output/OP_I_{1}.txt']
+COMANDOS = ['java -jar Mars_cache.jar seleccion_testing.asm pa input/CP_{0}.txt output/OP_S_{1}.txt','java -jar Mars_cache.jar mezcla_testing.asm pa input/CP_{0}.txt output/OP_M_{1}.txt']
 ################ Definicion de funciones ####################
 
 #Funcion que toma un archivo de texto con un conjunto
@@ -195,20 +195,27 @@ if len(sys.argv) == 5:
                 for i in range(0,TOTAL_PRUEBAS):
                     ########### Generar Caso de Prueba ##############
                     generar_entrada(MIN,MAX,N)
-                    ########## Cargar Caso de Prueba Creado Recien ################
-                    L = leer_entrada('input/CP_{0}.txt'.format(ID_ARCHIVO))
                     print 'Lista: {0}'.format(ID_ARCHIVO)
                     ################# APLICAR ORDENAMIENTO ##############
                     ## ITERATIVO ##
-                    #os.system(COMANDOS[1].format(ID_ARCHIVO,ID_ARCHIVO))
-
+                    print "Ordenando con selection_sort... Espere..."
+                    os.system(COMANDOS[0].format(ID_ARCHIVO,ID_ARCHIVO))
                     ## RECURSIVO ##
-                    L.sort()
-
+                    print "Ordenando con merge_sort... Espere..."
+                    os.system(COMANDOS[1].format(ID_ARCHIVO,ID_ARCHIVO))
+                    ########## Cargar Caso de Prueba Creado Recien ################
+                    L_selection = leer_entrada('output/OP_S_{0}.txt'.format(ID_ARCHIVO))
+                    L_merge = leer_entrada('output/OP_M_{0}.txt'.format(ID_ARCHIVO))
                     ################# Testing de Propiedades ###########
-                    #L = []
+                    print "Iniciando testing sobre selection_sort"
                     for test in PRUEBAS:
-                        if eval(test.format(L,N)):
+                        if eval(test.format(L_selection,N)):
+                            print 'Éxito en prueba: {0}'.format(test)
+                        else:
+                            print 'Fallo en prueba: {0}'.format(test)
+                    print "Iniciando testing sobre merge_sort"
+                    for test in PRUEBAS:
+                        if eval(test.format(L_merge,N)):
                             print 'Éxito en prueba: {0}'.format(test)
                         else:
                             print 'Fallo en prueba: {0}'.format(test)
