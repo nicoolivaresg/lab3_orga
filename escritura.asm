@@ -1,67 +1,16 @@
 .data
 	file: .asciiz "salida.txt"
-	buffer: .space 32
+	buffer: .space 13
 .text
 	main:
-		#la   $t0, buffer
-		
-		#addi $t0, $t0,0
-		
-		#la $t1, buffer
-		#sb $zero, 1($t0) #salto de linea al final
-		#li   $t1, 49  
-		#sb   $t1, ($t0)
-		#addi $t0, $t0,-1
-		#li   $t1, 50  
-		#sb   $t1, ($t0)
-		#addi $t0, $t0,-1
-		#li   $t1, 51  
-		#sb   $t1, ($t0)
-		#addi $t0, $t0,-1
-		#li   $t1, 52  
-		#sb   $t1, ($t0)
-		
-		#insertar caracter a string
-		#addi $t0, $t0,-1
-		#li $t1,'2'
-		#sb $t1, ($t0)
-		##########################
-		
-		#li $v0,4
-		#move $a0, $t0
-		#syscall
-	
-	
-		li $a0, 123456
+		move $s0, $v0
+		move $a1, $s0
+		li $a0,2347
 		jal int_to_string
-		move $a0,$v0
+		move $t9, $v0
 		li $v0,4
+		move $a0,$t9
 		syscall
-###############################################################
-  	# Open (for writing) a file that does not exist
-	li   $v0, 13       # system call for open file
-  	la   $a0, file     # output file name
-  	li   $a1, 1        # Open for writing (flags are 0: read, 1: write)
-  	li   $a2, 0        # mode is ignored
- 	syscall            # open a file (file descriptor returned in $v0)
-  	move $s6, $v0      # save the file descriptor 
-  	###############################################################
-  	# Write to file just opened
-  	li   $v0, 15       # system call for write to file
-  	move $a0, $s6      # file descriptor 
-  	la   $a1, buffer   # address of buffer from which to write
-  	li   $a2, 44       # hardcoded buffer length
-  	syscall            # write to file
-  	li   $v0, 15       # system call for write to file
-	move $a0, $s6      # file descriptor 
-  	la   $a1, buffer   # address of buffer from which to write
-  	syscall
-  	###############################################################
-  	# Close the file 
-  	li   $v0, 16       # system call for close file
-  	move $a0, $s6      # file descriptor to close
-  	syscall            # close file
-  	###############################################################
 	b end
 	
 	end:
@@ -74,71 +23,56 @@
 	#Entrada: 	$a0 -> un numero entero de 32 bits base 10
 	#Salida:  	$v0 -> respresentacion string ASCII del número
 	int_to_string:
-		addi $sp, $sp,-12
-		sw $ra, 8($sp)
-		addi $t6, $zero,10
-		#la   $t9, buffer #carga de buffer a $t9
-		#addi $t9,$t9,30
-		#la $t8, buffer
-		#sb $zero, 1($t9)
-		
-		la   $t0, buffer
-		addi $t0, $t0,0
-		la $t1, buffer
-		sb $zero, 1($t0) #salto de linea al final
-		
-		blt $a0, $zero, numero_negativo_int_to_string
-		#NUMERO POSITIVO
-		move $t5,$a0
-		loop_int_to_string:
-			div  $t5,$t6 #numero / 10
-			mflo $t5 #cuociente
-			mfhi $t7 #resto
-			###cambiar digito a character
-			sw $t0,0($sp)
-			sw $t1,4($sp)
-			move $a0,$t7
+		move $v1, $ra
+		move $t0,$a0 #numero
+		li $v0,0 # retorno
+		li $t2, 10 # base
+		la $t9, buffer #string buffer
+		addi $t9, $t9,12 # correr indice de escritura en buffer a la ultima posicion
+		li $t6, 10
+		sb $t6,($t9)
+		addi $t9, $t9,-1
+		slt $a0, $t0,$zero
+		beq $a0,1,negativo_int_string
+			addi $k0,$zero,0
+			b while_int_to_string
+		negativo_int_string:
+			addi $k0,$zero,1
+			mul $t0,$t0,-1
+			b while_int_to_string
+		while_int_to_string:
+			seq $t1,$t0,$zero
+			beq $t1,1, coef_cero #while(num != 0)
+			div $t0,$t2 # num/10
+			mfhi $a0 #resto
 			jal int_to_character
-			move $t7,$v0
-			lw $t0,0($sp)
-			lw $t1,4($sp)
-			#insertar caracter a string
+			move $t3,$v0
 			
-			
-			move   $t1, $t7
-			sb   $t1, ($t0)
-			addi $t0, $t0,-1
-			#li   $t1, 50  
-			#sb   $t1, ($t0)
-			
-			##########################
-			beq $t5,1,end_loop_int_to_string
-			
-			b loop_int_to_string
-		
-		end_loop_int_to_string:
-			b end_int_to_string
-		
-		numero_negativo_int_to_string:
-		#NUMERO NEGATIVO
-		move $t5,$a0
-		end_int_to_string:
-			lw $ra, 8($sp)
-			addi, $sp, $sp, 12
-			la $v0, buffer
+			#insertar al buffer
+			sb $t3,($t9)
+			#siguiente psicion buffer
+			addi $t9,$t9,-1
+			mflo $t0 # siguiente = coeficiente
+			b while_int_to_string
+		coef_cero:
+			bne $k0, 1, terminar_int_string
+			li $t3,45
+			sb $t3,($t9)
+			move $v0,$t9
+			move $ra, $v1
 			jr $ra
+		terminar_int_string:
+			addi $t9,$t9,1
+			move $v0,$t9
+			move $ra, $v1
+			jr $ra
+		
 		
 	#Esta funcion se encarga de convertir un dígito entero base 10 a su representación de caracter ASCII
 	#Entrada:	$a0-> un digito numerico entero
 	#Salida:	$v0-> un valor de caracter ASCII
 	int_to_character:
-		addi $t0,$zero,48
-		addi $t1, $zero,0
-		loop_int_to_character:
-			beq $t1,$a0,end_loop_int_to_character
-			addi $t0,$t0,1
-			addi $t1,$t1,1
-			b loop_int_to_character
-		end_loop_int_to_character:
-		move $v0, $t0
+		addi $v0, $a0,48
 		jr $ra
+
+	

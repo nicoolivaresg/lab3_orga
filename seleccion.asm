@@ -5,29 +5,28 @@
 	buffer: .space 1048576
 	salto_linea: .asciiz "\n"
 	file: .asciiz "input/CP_0.txt"
+	fout: .asciiz "salidaIter.txt"
 .text 
 	main:
 		#INT MAX : 2147483647 
 		#Lectura y carga de archivo en lista
 		# $a0 tiene a argc y $a1 tiene a argv(lista de argumentos)
 		# para acceder a primer elemento de argv lw $t0, 0($a1)
-		addi $sp, $sp,-8
-		sw $a0,0($sp) # stack argc
-		sw $a1,4($sp) #stack argv
-		lw $a0,4($sp) #load argv
-		lw $s5, 0($a0) #argv[0] archivo entrada
 		
 		
 		
-		#Se verifica que el número de argumentos es el correcto
-		lw $a0, 0($sp)
-		bne $a0, 2, fallo_entrada_argumentos
+		#bne $a0, 2, fallo_entrada_argumentos
+		#lw $s5, 0($a1) #argv[0] entrada
+		#addi $sp, $sp,-4
+		#lw $s0,4($a1)
+		#sw $s0,0($sp) #En el stack guardo la direcion al archivo
+				#de salida para escribir luego
 		#Entra al if 
 		###############################################################
   		# Open (for reading) a file that does not exist
   		li   $v0, 13       # system call for open file
   		lw $a1, 0($sp)
-  		la   $a0, ($s5)     # input file name
+  		#la   $a0, ($s5)     # input file name
   		la $a0, file
   		li   $a1, 0        # Open for reading (flags are 0: read, 1: write)
   		li   $a2, 0        # mode is ignored
@@ -106,58 +105,44 @@
 				b true_end_lectura
 			true_end_lectura:
 			
-			#Mostrar lista para comprobar
-			#add $a0, $zero, $s4
-			#jal mostrar_lista
-			
-			#li $v0, 4
-			#la $a0, salto_linea
-			#syscall
 				
 			###############################################################
 			# Close the file 
 			li   $v0, 16       # system call for close file
 			move $a0, $s0      # file descriptor to close
 			syscall            # close file
-			###############################################################								
-		addi $sp, $sp,-8	
+			###############################################################									
 			
 		#Llamar a función (lista debe estar cargada en $a1)
 		#
 		move $a0, $s4
 		jal selection_sort
-		#Lista ordenada
-		move $a0, $v0
-		jal mostrar_lista
 		
+		lw $a0, 0($sp) #archivo  salida
+		addi $sp, $sp,4 
 		
-		
-	#AHORA TOCA INTRODUCIR LA LISTA EN UN ARCHIVO DE SALIDA
-	#lw $a2, 4($sp)
-	#lw $a2, 4($a2) #nombre archivo
-	###############################################################
-  	# Open (for writing) a file that does not exist
-	#li   $v0, 13       # system call for open file
-  	#la   $a0, ($a2)     # output file name
-  	#li   $a1, 1        # Open for writing (flags are 0: read, 1: write)
-  	#li   $a2, 0        # mode is ignored
- 	#syscall            # open a file (file descriptor returned in $v0)
-  	#move $s6, $v0      # save the file descriptor 
-  	###############################################################
-  	# Write to file just opened
-  	#li   $v0, 15       # system call for write to file
-  	#move $a0, $s6      # file descriptor 
-  	#la   $a1, buffer   # address of buffer from which to write
-  	#li   $a2, 44       # hardcoded buffer length
-  	#syscall            # write to file
-  	###############################################################
-  	# Close the file 
-  	#li   $v0, 16       # system call for close file
-  	#move $a0, $s6      # file descriptor to close
-  	#syscall            # close file
-  	###############################################################
-
-	
+		##### ESCRITURA DE LISTA ORDENADA EN ARCHIVO ###
+		###############################################################
+# Open (for writing) a file that does not exist
+  li   $v0, 13       # system call for open file
+  #move   $a0, $a0     # output file name
+  la $a0, fout
+  li   $a1, 1        # Open for writing (flags are 0: read, 1: write)
+  li   $a2, 0        # mode is ignored
+  syscall            # open a file (file descriptor returned in $v0)
+  move $s6, $v0      # save the file descriptor 
+  ###############################################################
+  # Write to file just opened
+  ######## ITERAR LA LISTA PARA IMPRIMIR TODAS LAS LINEAS #########
+  move $a0, $s4
+  move $a1,$s6
+  jal dump_archivo
+  ###############################################################
+  # Close the file 
+  li   $v0, 16       # system call for close file
+  move $a0, $s6      # file descriptor to close
+  syscall            # close file
+  ###############################################################
 	
 	#Llamado a termino del programa
 	b end
@@ -210,9 +195,6 @@
 			lw $a1, 0($t1)
 			sw $a1, 0($t0)
 			sw $a0, 0($t1)
-			
-			#lw $a0, 0($sp)
-			#jal mostrar_lista
 			lw $t1, 4($t1) #aux = aux->sig
 			b loop_1_selection_sort
 		end_loop_1_selection_sort:
@@ -220,8 +202,105 @@
 			addi $sp, $sp, 4
 			jr $ra
 
-	
+	#Este procedimiento se encarga de escribir en un archivo de texto
+	#una lista enlazada (utiliza el buffer en .data)
+	#Entrada:	$a0 -> lista a guardar
+	#		$a1 -> file decriptor
+	#Salida:	Sin salida
+	dump_archivo:
+		move $a2, $a0 #aux
+		move $k1,$a1 #guardar file decriptor
+		addi $sp, $sp,-4
+		sw $ra, 0($sp)
+		loop_dump_archivo:
+			beq $a2,$zero,end_dump_archivo
+			#cargar el dato de la lista en a0
+			lw $a0,0($a2)
+			addi $sp,$sp,-4
+			sw $a2, 0($sp)
+			#pasarlo a string
+			jal int_to_string
+			move $t9,$v0 #string representativo en t9
+			#imprimir buffer en archivo
+			li $v0,15
+			move $a0, $k1
+			la   $a1, ($t9)   # address of buffer from which to write
+			la $t0, buffer
+			sub $t0,$t0,$t9
+			mul $t0,$t0,-1
+			li $t1,13
+			sub $t0,$t1,$t0
+			move   $a2, $t0
+			syscall
+			lw $a2, 0($sp)
+			addi $sp,$sp,4
+			#  aux = aux->sig
+			lw $a2, 4($a2)
+			b loop_dump_archivo
+		end_dump_archivo:
+			lw $ra, 0($sp)
+			addi $sp, $sp,4
+			jr $ra
 
+	#Esta funcion se encarga de convertir un numero entero de 32 bits de representacion en base 10
+	#a un string en ASCII
+	#Entrada: 	$a0 -> un numero entero de 32 bits base 10
+	#Salida:  	$v0 -> respresentacion string ASCII del número
+	int_to_string:
+		move $v1, $ra
+		move $t0,$a0 #numero
+		li $v0,0 # retorno
+		li $t2, 10 # base
+		la $t9, buffer #string buffer
+		addi $t9, $t9,12 # correr indice de escritura en buffer a la ultima posicion
+		li $t6, 10
+		sb $t6,($t9)
+		addi $t9, $t9,-1
+		slt $a0, $t0,$zero
+		beq $a0,1,negativo_int_string
+			addi $k0,$zero,0
+			b while_int_to_string
+		negativo_int_string:
+			addi $k0,$zero,1
+			mul $t0,$t0,-1
+			b while_int_to_string
+		while_int_to_string:
+			seq $t1,$t0,$zero
+			beq $t1,1, coef_cero #while(num != 0)
+			div $t0,$t2 # num/10
+			mfhi $a0 #resto
+			jal int_to_character
+			move $t3,$v0
+			
+			#insertar al buffer
+			sb $t3,($t9)
+			#siguiente psicion buffer
+			addi $t9,$t9,-1
+			mflo $t0 # siguiente = coeficiente
+			b while_int_to_string
+		coef_cero:
+			bne $k0, 1, terminar_int_string
+			#agregar simbolo negativo
+			li $t3,45
+			sb $t3,($t9)
+			move $v0,$t9
+			move $ra, $v1
+			jr $ra
+		terminar_int_string:
+			#no tiene simbolo negativo, se devuelve una posicion
+			addi $t9,$t9,1
+			move $v0,$t9
+			move $ra, $v1
+			jr $ra
+		
+		
+	#Esta funcion se encarga de convertir un dígito entero base 10 a su representación de caracter ASCII
+	#Entrada:	$a0-> un digito numerico entero
+	#Salida:	$v0-> un valor de caracter ASCII
+	int_to_character:
+		addi $v0, $a0,48
+		jr $ra
+	
 	#Este procedimiento se encarga de convertir un caracter a su representacion entero base 10
 	#Entrada: En $a1 un valor de caracter en código ASCII
 	#Salida: En $v0 un valor en representacion entero base 10 para el caracter
