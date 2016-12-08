@@ -8,7 +8,7 @@
 	mensaje_error_character_to_int: .asciiz "\nEl caracter ASCII está fuera del rango de digitos decimales entre 0 y 9 (48~57)"
 	buffer: .space 1048576
 	salto_linea: .asciiz "\n"
-	file: .asciiz "test.txt"
+	file: .asciiz "input/CP_0.txt"
 .text
 	main:
 		#INT MAX : 2147483647
@@ -25,18 +25,18 @@
 
 
 		#Se verifica que el número de argumentos es el correcto
-		bne $a0, 2, fallo_entrada_argumentos
-		lw $s5, 0($a1) #argv[0] entrada
-		addi $sp, $sp,-4
-		lw $s0,4($a1)
-		sw $s0,0($sp) #En el stack guardo la direcion al archivo
+		#bne $a0, 2, fallo_entrada_argumentos
+		#lw $s5, 0($a1) #argv[0] entrada
+		#addi $sp, $sp,-4
+		#lw $s0,4($a1)
+		#sw $s0,0($sp) #En el stack guardo la direcion al archivo
 				#de salida para escribir luego
 		#Entra al if
 		###############################################################
   		# Open (for reading) a file that does not exist
   		li   $v0, 13       # system call for open file
-  		la   $a0, ($s5)     # input file name
-  		#la $a0, file
+  		#la   $a0, ($s5)     # input file name
+  		la $a0, file
   		li   $a1, 0        # Open for reading (flags are 0: read, 1: write)
   		li   $a2, 0        # mode is ignored
   		syscall            # open a file (file descriptor returned in $v0)
@@ -128,6 +128,10 @@
 
 		#Llamar a función (lista debe estar cargada en $a1)
 		#
+		move $a0,$s5
+		jal crear_arreglo_auxiliar
+		move $s6, $v0
+		
 		move $a0, $s4
 		li $a1, 0
 		addi $a2, $s5,-1
@@ -135,8 +139,8 @@
 		jal merge_sort
 		
 		
-		lw $a0, 0($sp)
-		addi $sp, $sp,4
+		lw $a0, 0($sp) #archivo  salida
+		addi $sp, $sp,4 
 		#Lista ordenada
 		move $a0, $v0
 		jal mostrar_lista
@@ -189,6 +193,7 @@
 		lw $a1,8($sp)#inicio
 		lw $a2,12($sp)#fin
 		lw $t1, 16($sp)#medio
+
 		
 				
 		
@@ -243,14 +248,14 @@
 		sw $a2, 4($sp)
 		sw $a3, 8($sp)
 		
-		jal crear_lista_n_nodos #A[fin-inicio+1]
+		#jal crear_lista_n_nodos #A[fin-inicio+1]
 
 		
 		lw $a1, 0($sp)
 		lw $a2, 4($sp)
 		lw $a3, 8($sp)
 
-		move $t0,$v0  #Aux
+		move $t0,$s6  #Aux
 		move $t1,$a1 #h = inicio
 		move $t2,$a1 #i= inicio
 		addi $t3,$a2,1 #j = medio+1
@@ -291,8 +296,9 @@
 				move $t8, $a2
 				move $a2, $t1 # t1 es h
 				
+				move $a0, $s6
 								
-				jal insertar_posicion #Aux[h] = A[i]
+				jal cambiar_valor_en_p #Aux[h] = A[i]
 				
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -308,7 +314,10 @@
 				move $t8, $a2
 				move $a2, $t1 # t1 es h				
 		
-				jal insertar_posicion #Aux[h] = A[j]
+				move $a0, $s6
+								
+				jal cambiar_valor_en_p
+				#jal insertar_posicion #Aux[h] = A[j]
 				
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -344,8 +353,10 @@
 				move $t8, $a2
 				move $a2, $t1 # h
 					
-				
-				jal insertar_posicion #Aux[h] = A[k]
+				move $a0, $s6
+								
+				jal cambiar_valor_en_p
+				#jal insertar_posicion #Aux[h] = A[k]
 				
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -378,9 +389,10 @@
 				move $t8, $a2
 				move $a2, $t1 # h
 				
-				
-				
-				jal insertar_posicion #Aux[h] = A[j]
+				move $a0, $s6
+								
+				jal cambiar_valor_en_p				
+				#jal insertar_posicion #Aux[h] = A[j]
 				
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -396,7 +408,7 @@
 		end_for_2:
 
 		move $t8,$t9 #L sin cammbios
-		move $t0,$t0 #L aux
+		move $t0,$t0 #arreglo aux
 		move $t4, $k0
 			for_3:
 				sgt $a0,$t4,$a3
@@ -404,8 +416,9 @@
 				move $a0, $t0 #Aux
 				move $a1,$t4 # k
 				
-			
-				jal dato_en_posicion #Buscar A[k]
+				move $a0, $s6
+				jal obtener_valor_en_p
+				#jal dato_en_posicion #Buscar A[k]
 			
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -414,12 +427,14 @@
 				
 				move $t8,$v0
 				move $a0, $t9 #A
-				move $a1, $t8 #Aux[k]
+				move $a1, $t8 #A[k]
 				move $t8, $a2
 				move $a2, $t4 # k
 				
-				
-				jal insertar_posicion #Aux[k] = A[k]
+				#move $a0, $s6
+								
+
+				jal insertar_posicion #A[k] = Aux[k]
 				
 				lw $a1, 0($sp)
 				lw $a2, 4($sp)
@@ -430,6 +445,15 @@
 				addi $t4,$t4,1 #k=k+1
 				b for_3
 		end_for_3:
+		
+		move $a0, $v0
+		jal mostrar_lista
+		li $v0,4
+		la $a0, salto_linea
+		syscall
+		move $a0,$s6
+		move $a1, $s5
+		jal vaciar_arreglo
 		addi $sp,$sp,12
 		move $v0, $t9
 		lw $ra, 0($sp)
@@ -437,9 +461,57 @@
 		jr $ra
 
 
+	#Este procedimiento se encarga de crear un arreglo auxiliar de un 
+	#tamano dado
+	#Entrada: 	$a0-> tamano n
+	#Salida:	$v0-> direccion a primer elemento
+	crear_arreglo_auxiliar:
+		li $v0,9
+		mul $a0,$a0,4
+		syscall
+		jr $ra
+		
+	#Este procedimiento se encarga de modificar el valor de un arreglo 
+	#en una posicion
+	#Entrada: 	$a0 -> direccion primer elemento
+	#		$a1 -> valor
+	#		$a2 -> posicion
+	#Salida: 	Sin salida
+	cambiar_valor_en_p:
+		mul $a2,$a2,4
+		add $a0,$a2, $a0
+		sw $a1, ($a0)
+		jr $ra
+	
+	#Este procedimiento se encarga de obtener el valor contenido 
+	#en una posicion de un arreglo
+	#Entrada:	$a0 -> direccion primer elemento
+	#		$a1 -> posicion
+	#Salida: 	$v0 -> valor obtenido
+	obtener_valor_en_p:
+		mul $a1,$a1,4
+		add $a0,$a1, $a0
+		lw $v0, ($a0)
+		jr $ra
 
-
-
+	#Este procedimiento se encarga de vaciar o volver a 0 los valores de un arreglo
+	#Desde una posicion inicial a una posicion final
+	#Entrada:	$a0 -> arreglo
+	#		$a1 -> posicion inicial
+	#		$a2 -> posicion final
+	#Salida: 	$v0 -> arreglo modificado
+	vaciar_arreglo:
+		move $v0, $a0
+		for_vaciar_arreglo:
+			sgt $t0,$a1,$a2
+			beq $t0, 1, end_for_vaciar_arreglo
+			sw $zero,($a0)
+			addi $a1, $a1, 1
+			addi $a0, $a0, 4
+			b for_vaciar_arreglo
+		end_for_vaciar_arreglo:
+		jr $ra
+		
 	#Este procedimiento se encarga de convertir un caracter a su representacion decimal
 	#Entrada: En $a1 un valor de caracter en código ASCII
 	#Salida: En $v0 un valor en representacion decimal para el caracter
@@ -683,4 +755,5 @@
 			la $a0, error_posicion_mayor_insertar_posicion
 			syscall
 			b end
+	
 	
