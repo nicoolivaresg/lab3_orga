@@ -256,6 +256,8 @@
 		li $t6, 10
 		sb $t6,($t9)
 		addi $t9, $t9,-1
+		seq $a0,$t0,$zero
+		beq $a0,1,es_cero_int_string
 		slt $a0, $t0,$zero
 		beq $a0,1,negativo_int_string
 			addi $k0,$zero,0
@@ -286,12 +288,19 @@
 			move $v0,$t9
 			move $ra, $v1
 			jr $ra
+		es_cero_int_string:
+			li $t3,48
+			sb $t3,($t9)
+			move $v0,$t9
+			move $ra, $v1
+			jr $ra
 		terminar_int_string:
 			#no tiene simbolo negativo, se devuelve una posicion
 			addi $t9,$t9,1
 			move $v0,$t9
 			move $ra, $v1
 			jr $ra
+		
 		
 		
 	#Esta funcion se encarga de convertir un dígito entero base 10 a su representación de caracter ASCII
