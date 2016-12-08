@@ -21,18 +21,22 @@
 		#lw $a0,4($sp) #load argv
 		#lw $s5, 0($a0) #argv[0] archivo entrada
 		#sw $zero,8($sp)
-
+		
 
 
 		#Se verifica que el número de argumentos es el correcto
-		#lw $a0, 0($sp)
-		#bne $a0, 2, fallo_entrada_argumentos
+		bne $a0, 2, fallo_entrada_argumentos
+		lw $s5, 0($a1) #argv[0] entrada
+		addi $sp, $sp,-4
+		lw $s0,4($a1)
+		sw $s0,0($sp) #En el stack guardo la direcion al archivo
+				#de salida para escribir luego
 		#Entra al if
 		###############################################################
   		# Open (for reading) a file that does not exist
   		li   $v0, 13       # system call for open file
-  		#la   $a0, ($s5)     # input file name
-  		la $a0, file
+  		la   $a0, ($s5)     # input file name
+  		#la $a0, file
   		li   $a1, 0        # Open for reading (flags are 0: read, 1: write)
   		li   $a2, 0        # mode is ignored
   		syscall            # open a file (file descriptor returned in $v0)
@@ -93,14 +97,11 @@
 				add $a1, $zero, $s6
 				jal insertar_inicio
 				move $s4,$v0
-				#lw $a0,8($sp)
-				#addi $a0,$a0,1
-				#sw $a0,8($sp)
 				addi $k1,$k1,1
 				addi $s6,$zero,0 #reiniciar suma del numero total
 				addi $s5 $zero,0
 				subi $s2,$s2,1
-				#beq $s2,0, end_loop_lectura
+
 				b loop_lectura
 
 			end_loop_lectura:
@@ -112,29 +113,11 @@
 				add $a1, $zero, $s6
 				jal insertar_inicio
 				move $s4,$v0
-				#lw $a0,8($sp)
-				#addi $a0,$a0,1
-				#sw $a0,8($sp)
 				addi $k1,$k1,1
 				b true_end_lectura
 			true_end_lectura:
-			#lw $s5,8($sp) # $s5 = N -> tamano lista
+
 			move $s5, $k1
-			#Mostrar lista para comprobar
-			add $a0, $zero, $s4
-			jal mostrar_lista
-
-			li $v0, 4
-			la $a0, salto_linea
-			syscall
-
-			li $v0, 1
-			move $a0, $s5
-			syscall
-			
-			li $v0, 4
-			la $a0, salto_linea
-			syscall
 			###############################################################
 			# Close the file
 			li   $v0, 16       # system call for close file
@@ -142,7 +125,7 @@
 			syscall            # close file
 			###############################################################
 
-			#addi $sp,$sp,12
+
 		#Llamar a función (lista debe estar cargada en $a1)
 		#
 		move $a0, $s4
@@ -150,9 +133,16 @@
 		addi $a2, $s5,-1
 		li $s7,0
 		jal merge_sort
+		
+		
+		lw $a0, 0($sp)
+		addi $sp, $sp,4
 		#Lista ordenada
-		#move $a0, $v0
-		#jal mostrar_lista
+		move $a0, $v0
+		jal mostrar_lista
+		#li $v0,4
+		#la $a0, salto_linea
+		#syscall
 
 
 		#Llamado a termino del programa
@@ -199,14 +189,12 @@
 		lw $a1,8($sp)#inicio
 		lw $a2,12($sp)#fin
 		lw $t1, 16($sp)#medio
-		addi $sp, $sp,20
 		
 				
 		
 		addi $sp, $sp,-20
 		sw $ra ,0($sp) #direccion antes de llamado
 		sw $a0,4($sp) #cabeza lista
-		#addi $a1,$t1,1	
 		sw $a1,8($sp) #inicio =medio+1
 		sw $a2,12($sp) #fin =fin
 		sw $t1,16($sp) #guardar medio
@@ -228,16 +216,14 @@
 		move $a1,$a1 #inicio=inicio
 		move $a3,$a2 #fin = fin
 		move $a2, $t1 #medio = medio
-	
-		jal combinar
 		
-		move $v0,$v0
-		#lw $ra, 0($sp)
+		jal combinar
+		move $v0,$a0
+		lw $ra, 0($sp)
 		addi $sp,$sp,40
 		jr $ra
 		no_entra_merge_sort:
 		move $v0,$a0
-		#lw $ra,0($sp)
 		jr $ra
 
 	#Este procedimiento se encarga de combinar las lista del procedimiento de merge_sort
@@ -250,12 +236,19 @@
 		move $t9, $a0
 		move $k0, $a1
 		move $k1, $a3
+		move $a0, $s5
 		
-		#fin-inicio+1
-		sub $a0,$a3,$a1
-		addi $a0,$a0,1
+		add $sp, $sp,-12
+		sw $a1, 0($sp)
+		sw $a2, 4($sp)
+		sw $a3, 8($sp)
 		
 		jal crear_lista_n_nodos #A[fin-inicio+1]
+
+		
+		lw $a1, 0($sp)
+		lw $a2, 4($sp)
+		lw $a3, 8($sp)
 
 		move $t0,$v0  #Aux
 		move $t1,$a1 #h = inicio
@@ -263,11 +256,6 @@
 		addi $t3,$a2,1 #j = medio+1
 		addi $t4,$zero,0 #k = 0
 		
-		move $a0,$t0
-		jal mostrar_lista
-		li $v0,4
-		la $a0, salto_linea
-		syscall
 
 		loop_recorre_ambas_sublistas:
 			sle  $a0,$t2,$a2 #¿i <= medio ?
@@ -276,11 +264,24 @@
 			bne $a0,1,end_loop_recorre_ambas_sublistas #while
 			move $a0, $t9 
 			move $a1, $t2
+				
 			jal dato_en_posicion # Buscar A[i]
+			
+			lw $a1, 0($sp)
+			lw $a2, 4($sp)
+			lw $a3, 8($sp)
+			
 			move $t8, $v0 #A[i]
 			move $a0,$t9 
 			move $a1, $t3
+						
 			jal dato_en_posicion #Buscar A[j]
+			
+			lw $a1, 0($sp)
+			lw $a2, 4($sp)
+			lw $a3, 8($sp)
+			
+			
 			move $t7,$v0 #A[j]
 			sle $a0,$t8,$t7 #¿A[i]<= A[j]?
 			bne $a0,1,sino_sublista #if (A[i]>A[j]) goto else
@@ -289,7 +290,14 @@
 				move $a1, $t8 # t8 es A[i]
 				move $t8, $a2
 				move $a2, $t1 # t1 es h
+				
+								
 				jal insertar_posicion #Aux[h] = A[i]
+				
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+								
 				move $t0,$v0 
 				move $a2,$t8
 				addi $t2,$t2,1 # i=i+1
@@ -298,18 +306,19 @@
 				move $a0, $t0 # t0 es Aux
 				move $a1, $t7 # t7 es A[j]
 				move $t8, $a2
-				move $a2, $t1 # t1 es h
+				move $a2, $t1 # t1 es h				
+		
 				jal insertar_posicion #Aux[h] = A[j]
+				
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+				
 				move $t0,$v0
-				move $a2, $t0
+				move $a2, $t8
 				addi $t3,$t3,1 # j =j+1
 				b avanzar_h
 			avanzar_h:
-				move $a0,$t0
-				jal mostrar_lista
-				li $v0,4
-				la $a0, salto_linea
-				syscall
 				addi $t1,$t1,1 # h= h+1
 				b  loop_recorre_ambas_sublistas
 		end_loop_recorre_ambas_sublistas:
@@ -321,13 +330,27 @@
 				beq $a0,1,end_for_1
 				move $a0, $t9 #A
 				move $a1,$t4 # k
-				jal dato_en_posicion #A[k]
+			
+				jal dato_en_posicion #Buscar A[k]
+			
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+				#add $sp, $sp,12
+			
 				move $t8,$v0 
 				move $a0, $t0  # Aux
 				move $a1, $t8 # A[k]
 				move $t8, $a2
 				move $a2, $t1 # h
-				jal insertar_posicion # Aux[h] = A[k]
+					
+				
+				jal insertar_posicion #Aux[h] = A[k]
+				
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+				
 				move $t0,$v0
 				move $a2, $t8
 				addi $t4,$t4,1 #k=k+1
@@ -341,13 +364,29 @@
 				beq $a0,1,end_for_2
 				move $a0, $t9 #A
 				move $a1,$t4 # k
-				jal dato_en_posicion #A[k]
+							
+				jal dato_en_posicion #Buscar A[k]
+			
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+
+				
 				move $t8,$v0 
 				move $a0, $t0  # Aux
 				move $a1, $t8 # A[k]
 				move $t8, $a2
 				move $a2, $t1 # h
-				jal insertar_posicion # Aux[h] = A[k]
+				
+				
+				
+				jal insertar_posicion #Aux[h] = A[j]
+				
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+
+				
 				move $t0,$v0
 				move $a2, $t8
 				addi $t4,$t4,1 #k=k+1
@@ -364,24 +403,37 @@
 				beq $a0,1,end_for_3
 				move $a0, $t0 #Aux
 				move $a1,$t4 # k
-				jal dato_en_posicion #Aux[k]
+				
+			
+				jal dato_en_posicion #Buscar A[k]
+			
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+
+				
 				move $t8,$v0
 				move $a0, $t9 #A
 				move $a1, $t8 #Aux[k]
 				move $t8, $a2
 				move $a2, $t4 # k
-				jal insertar_posicion #A[k] = Aux[k]
+				
+				
+				jal insertar_posicion #Aux[k] = A[k]
+				
+				lw $a1, 0($sp)
+				lw $a2, 4($sp)
+				lw $a3, 8($sp)
+				
 				move $t9,$v0
 				move $a2, $t8
 				addi $t4,$t4,1 #k=k+1
 				b for_3
 		end_for_3:
+		addi $sp,$sp,12
 		move $v0, $t9
-		move $a0,$v0
-		jal mostrar_lista
-		li $v0,4
-		la $a0, salto_linea
-		syscall
+		lw $ra, 0($sp)
+		addi $sp, $sp,20
 		jr $ra
 
 
@@ -493,9 +545,9 @@
 	#	  	$a1 -> dato a guardar
 	#Salida: 	$v0-> nueva direccion de memoria de la lista
 	insertar_final:
-		addi $sp, $sp, -8
-		sw $a0, 4($sp)
+		addi, $sp, $sp,-4
 		sw $ra,0($sp)
+		move $k1,$a0
 		move $a0, $a0
 		jal es_vacia
 		beq $v0, 1, lista_vacia_insertar_final
@@ -504,7 +556,7 @@
 			jal crear_nodo
 			move $t6, $v0
 
-			lw $t2, 4($sp)
+			move $t2, $k1
 			loop_insertar_final:
 				lw $t0, 4($t2)
 				beq $t0,$zero,end_loop_insertar_final
@@ -518,15 +570,15 @@
 		##lista vacia
 			add $a0, $zero, $a1
 			jal crear_nodo
-			lw $ra, 0($sp)
 			move $a0, $t8
-			addi $sp, $sp,8
+			lw $ra,0($sp)
+			addi $sp,$sp,4
 			jr $ra
 			
 		end_insertar_final:
-			lw $ra, 0($sp)
-			lw $v0,4($sp)
-			addi $sp, $sp,8
+			move $v0,$k1
+			lw $ra,0($sp)
+			addi $sp,$sp,4
 			jr $ra
 	
 	#Este procedimiento se encarga de mostrar por panatalla la lista enlazada
@@ -551,7 +603,7 @@
 	#Entrada: 	$a0-> n cantidad de nodos
 	#Salida:	$v0 -> puntero a la cabeza de esta lista
 	crear_lista_n_nodos:
-		addi $sp,$sp,12
+		addi, $sp, $sp,-4
 		sw $ra,0($sp)
 		addi $t6, $zero, 0
 		addi $t5, $zero, 0
@@ -560,18 +612,14 @@
 			bge $t5,$t7, end_loop_crear_lista_n_nodos
 			move $a0, $t6
 			li $a1,0
-			sw $t5,4($sp)
-			sw $t7,8($sp)
 			jal insertar_final
-			lw $t5,4($sp)
-			lw $t7,8($sp)
 			move $t6,$v0
 			addi $t5, $t5,1
 			b loop_crear_lista_n_nodos
 			
 		end_loop_crear_lista_n_nodos:
 			lw $ra,0($sp)
-			addi $sp,$sp,12
+			addi $sp,$sp,4
 			move $v0, $t6
 			jr $ra
 			
