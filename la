@@ -1,0 +1,3 @@
+Faltan o sobran argumentos
+	 ./test [CANTIDAD_PRUEBAS?A_GENERAR] [MIN_ELEMENTO_LISTA] [MAX_ELEMENTO_LISTA] [TAMAÑO_LISTA]
+
