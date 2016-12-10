@@ -1,0 +1,8 @@
+seleccion<- read.csv('seleccionLE.csv')
+mezcla<- read.csv('mezclaLE.csv')
+
+x<-seleccion[["Tasa.de.Hit"]]
+y<-mezcla[["Tasa.de.Hit"]]
+#summary(selec)
+
+wilcox.test(x,y,alternative= "greater",paired = TRUE,correct =FALSE)

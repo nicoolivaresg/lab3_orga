@@ -8,7 +8,7 @@
 	mensaje_error_character_to_int: .asciiz "\nEl caracter ASCII está fuera del rango de digitos decimales entre 0 y 9 (48~57)"
 	buffer: .space 1048576
 	salto_linea: .asciiz "\n"
-	file: .asciiz "input/CP_0.txt"
+	file: .asciiz "prueba_cache.txt"
 	fout: .asciiz "salidaRec.txt"
 .text
 	main:
