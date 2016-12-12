@@ -1,0 +1,13 @@
+Test ID,Política de posicionamiento,Política de reemplazo de bloques,N# de bloques,Tamaño de bloques (palabras),Tamaño de conjunto (bloques),Tamaño de cache (bytes),Accesos a memoria,Hits,Misses,Tasa de Hit,Tasa de Miss
+1,Direct Mapping,LRU,8,4,1,128,61421,53335,8086,87,
+2,Fully Associative,LRU,8,4,8,128,63361,60281,3080,95,
+3,N-way Set Associative,LRU,64,4,8,1024,61677,60599,1078,98,
+4,Direct Mapping,LRU,64,16,1,4096,64141,62138,2003,97,
+5,Fully Associative,LRU,128,16,128,8192,60673,60598,75,100,
+6,N-way Set Associative,LRU,128,64,16,32768,64141,64117,24,100,
+7,Direct Mapping,Random,8,4,1,128,61147,53273,7874,87,
+8,Fully Associative,Random,8,4,8,128,63383,59232,4151,93,
+9,N-way Set Associative,Random,64,4,8,1024,61511,61433,78,100,
+10,Direct Mapping,Random,64,16,1,4096,61329,61192,137,100,
+11,Fully Associative,Random,128,16,128,8192,61325,61250,75,100,
+12,N-way Set Associative,Random,128,64,16,32768,62481,62458,23,100,

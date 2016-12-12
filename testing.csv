@@ -1,7 +1,0 @@
-Test ID,Política de posicionamiento,N# de bloques,Tamaño de bloques (palabras),Tamaño de conjunto (bloques),Tamaño de cache (bytes),Accesos a memoria,Hits,Misses,Tasa de Hit,Tasa de Miss
-1,Direct Mapping,8,4,1,128,406203,208549,197654,"51,00%","49,00%"
-2,Fully Associative,,,,,,,,,
-3,N-way Set Associative,,,,,,,,,
-4,,,,,,,,,,
-5,,,,,,,,,,
-6,,,,,,,,,,
